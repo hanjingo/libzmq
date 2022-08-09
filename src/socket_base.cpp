@@ -1503,7 +1503,7 @@ int zmq::socket_base_t::process_commands (int timeout_, bool throttle_)
     //  Process all available commands.
     while (rc == 0) {
         cmd.destination->process_command (cmd);
-        rc = _mailbox->recv (&cmd, 0);
+        rc = _mailbox->recv (&cmd, 0); // 使用mailbox接收命令
     }
 
     if (errno == EINTR)

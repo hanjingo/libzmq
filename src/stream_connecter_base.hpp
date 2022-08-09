@@ -55,12 +55,12 @@ class stream_connecter_base_t : public own_t, public io_object_t
 
   protected:
     //  Handlers for incoming commands.
-    void process_plug () ZMQ_FINAL;
-    void process_term (int linger_) ZMQ_OVERRIDE;
+    void process_plug () ZMQ_FINAL;               // 添加连接到轮询器
+    void process_term (int linger_) ZMQ_OVERRIDE; // 终止连接
 
     //  Handlers for I/O events.
-    void in_event () ZMQ_OVERRIDE;
-    void timer_event (int id_) ZMQ_OVERRIDE;
+    void in_event () ZMQ_OVERRIDE;                // 处理IO事件
+    void timer_event (int id_) ZMQ_OVERRIDE;      // 处理计时器事件
 
     //  Internal function to create the engine after connection was established.
     virtual void create_engine (fd_t fd, const std::string &local_address_);
@@ -76,20 +76,20 @@ class stream_connecter_base_t : public own_t, public io_object_t
 
     //  Address to connect to. Owned by session_base_t.
     //  It is non-const since some parts may change during opening.
-    address_t *const _addr;
+    address_t *const _addr; // 连接地址
 
     //  Underlying socket.
     fd_t _s;
 
     //  Handle corresponding to the listening socket, if file descriptor is
     //  registered with the poller, or NULL.
-    handle_t _handle;
+    handle_t _handle; // 句柄
 
     // String representation of endpoint to connect to
-    std::string _endpoint;
+    std::string _endpoint; // 需要连接的端点
 
     // Socket
-    zmq::socket_base_t *const _socket;
+    zmq::socket_base_t *const _socket; // 基类
 
   private:
     //  ID of the timer used to delay the reconnection.

@@ -64,20 +64,20 @@ class mailbox_t ZMQ_FINAL : public i_mailbox
   private:
     //  The pipe to store actual commands.
     typedef ypipe_t<command_t, command_pipe_granularity> cpipe_t;
-    cpipe_t _cpipe;
+    cpipe_t _cpipe;       // 管道（无锁队列）
 
     //  Signaler to pass signals from writer thread to reader thread.
-    signaler_t _signaler;
+    signaler_t _signaler; // 发送端通知接收端
 
     //  There's only one thread receiving from the mailbox, but there
     //  is arbitrary number of threads sending. Given that ypipe requires
     //  synchronised access on both of its endpoints, we have to synchronise
     //  the sending side.
-    mutex_t _sync;
+    mutex_t _sync;        // 用于保护一读（线程）多写（线程）模型数据
 
     //  True if the underlying pipe is active, ie. when we are allowed to
     //  read commands from it.
-    bool _active;
+    bool _active;         // 管道中是否有命令可读
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (mailbox_t)
 };

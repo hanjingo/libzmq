@@ -69,7 +69,7 @@ template <typename T, int N> class yqueue_t
         _begin_chunk = allocate_chunk ();
         alloc_assert (_begin_chunk);
         _begin_pos = 0;
-        _back_chunk = NULL;
+        _back_chunk = NULL; // 初始时尾结点为空
         _back_pos = 0;
         _end_chunk = _begin_chunk;
         _end_pos = 0;
@@ -94,19 +94,19 @@ template <typename T, int N> class yqueue_t
 
     //  Returns reference to the front element of the queue.
     //  If the queue is empty, behaviour is undefined.
-    inline T &front () { return _begin_chunk->values[_begin_pos]; }
+    inline T &front () { return _begin_chunk->values[_begin_pos]; } // 返回第一个元素的引用
 
     //  Returns reference to the back element of the queue.
     //  If the queue is empty, behaviour is undefined.
-    inline T &back () { return _back_chunk->values[_back_pos]; }
+    inline T &back () { return _back_chunk->values[_back_pos]; } // 返回最后一个元素的引用
 
     //  Adds an element to the back end of the queue.
-    inline void push ()
+    inline void push () // 添加元素到链表尾
     {
         _back_chunk = _end_chunk;
         _back_pos = _end_pos;
 
-        if (++_end_pos != N)
+        if (++_end_pos != N) // 有空洞
             return;
 
         chunk_t *sc = _spare_chunk.xchg (NULL);
@@ -129,7 +129,7 @@ template <typename T, int N> class yqueue_t
     //  unpush is called. It cannot be done automatically as the read
     //  side of the queue can be managed by different, completely
     //  unsynchronised thread.
-    inline void unpush ()
+    inline void unpush () // 回滚操作
     {
         //  First, move 'back' one position backwards.
         if (_back_pos)
@@ -154,7 +154,7 @@ template <typename T, int N> class yqueue_t
     }
 
     //  Removes an element from the front end of the queue.
-    inline void pop ()
+    inline void pop () // 弹出头结点
     {
         if (++_begin_pos == N) {
             chunk_t *o = _begin_chunk;
@@ -165,7 +165,7 @@ template <typename T, int N> class yqueue_t
             //  'o' has been more recently used than _spare_chunk,
             //  so for cache reasons we'll get rid of the spare and
             //  use 'o' as the spare.
-            chunk_t *cs = _spare_chunk.xchg (o);
+            chunk_t *cs = _spare_chunk.xchg (o); // 更新最近出块信息，释放先前的块
             free (cs);
         }
     }
@@ -195,17 +195,17 @@ template <typename T, int N> class yqueue_t
     //  while begin & end positions are always valid. Begin position is
     //  accessed exclusively be queue reader (front/pop), while back and
     //  end positions are accessed exclusively by queue writer (back/push).
-    chunk_t *_begin_chunk;
+    chunk_t *_begin_chunk; // 头指针
     int _begin_pos;
-    chunk_t *_back_chunk;
+    chunk_t *_back_chunk;  // 结点指针
     int _back_pos;
-    chunk_t *_end_chunk;
+    chunk_t *_end_chunk;   // 尾指针
     int _end_pos;
 
     //  People are likely to produce and consume at similar rates.  In
     //  this scenario holding onto the most recently freed chunk saves
     //  us from having to call malloc/free.
-    atomic_ptr_t<chunk_t> _spare_chunk;
+    atomic_ptr_t<chunk_t> _spare_chunk; // 最近出队的块（空闲块）
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (yqueue_t)
 };

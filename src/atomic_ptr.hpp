@@ -173,7 +173,7 @@ inline void *atomic_cas (void *volatile *ptr_,
 #endif
 
 //  This class encapsulates several atomic operations on pointers.
-
+// 原子锁
 template <typename T> class atomic_ptr_t
 {
   public:
@@ -183,11 +183,11 @@ template <typename T> class atomic_ptr_t
     //  Set value of atomic pointer in a non-threadsafe way
     //  Use this function only when you are sure that at most one
     //  thread is accessing the pointer at the moment.
-    void set (T *ptr_) ZMQ_NOEXCEPT { _ptr = ptr_; }
+    void set (T *ptr_) ZMQ_NOEXCEPT { _ptr = ptr_; } // 设置指针指向的对象（非原子操作）
 
     //  Perform atomic 'exchange pointers' operation. Pointer is set
     //  to the 'val_' value. Old value is returned.
-    T *xchg (T *val_) ZMQ_NOEXCEPT
+    T *xchg (T *val_) ZMQ_NOEXCEPT // 设置指针指向对象的值（原子操作）
     {
 #if defined ZMQ_ATOMIC_PTR_CXX11
         return _ptr.exchange (val_, std::memory_order_acq_rel);
@@ -205,7 +205,7 @@ template <typename T> class atomic_ptr_t
     //  The pointer is compared to 'cmp' argument and if they are
     //  equal, its value is set to 'val_'. Old value of the pointer
     //  is returned.
-    T *cas (T *cmp_, T *val_) ZMQ_NOEXCEPT
+    T *cas (T *cmp_, T *val_) ZMQ_NOEXCEPT // 比较并交换，相等即赋值（原子操作）
     {
 #if defined ZMQ_ATOMIC_PTR_CXX11
         _ptr.compare_exchange_strong (cmp_, val_, std::memory_order_acq_rel);

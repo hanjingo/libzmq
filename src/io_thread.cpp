@@ -44,7 +44,7 @@ zmq::io_thread_t::io_thread_t (ctx_t *ctx_, uint32_t tid_) :
     alloc_assert (_poller);
 
     if (_mailbox.get_fd () != retired_fd) {
-        _mailbox_handle = _poller->add_fd (_mailbox.get_fd (), this);
+        _mailbox_handle = _poller->add_fd (_mailbox.get_fd (), this); // 添加邮箱句柄到poller
         _poller->set_pollin (_mailbox_handle);
     }
 }
@@ -86,9 +86,9 @@ void zmq::io_thread_t::in_event ()
     command_t cmd;
     int rc = _mailbox.recv (&cmd, 0);
 
-    while (rc == 0 || errno == EINTR) {
+    while (rc == 0 || errno == EINTR) { // 一次性读取所有内容
         if (rc == 0)
-            cmd.destination->process_command (cmd);
+            cmd.destination->process_command (cmd); // 处理命令
         rc = _mailbox.recv (&cmd, 0);
     }
 

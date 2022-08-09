@@ -36,7 +36,7 @@
 
 namespace zmq
 {
-typedef zmq_fd_t fd_t;
+typedef zmq_fd_t fd_t; // 套接字描述符
 
 #ifdef ZMQ_HAVE_WINDOWS
 #if defined _MSC_VER && _MSC_VER <= 1400

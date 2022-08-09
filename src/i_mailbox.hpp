@@ -37,7 +37,7 @@ namespace zmq
 {
 //  Interface to be implemented by mailbox.
 
-class i_mailbox
+class i_mailbox // 邮箱接口类
 {
   public:
     virtual ~i_mailbox () ZMQ_DEFAULT;

@@ -658,7 +658,7 @@ int zmq::thread_ctx_t::get (int option_,
     errno = EINVAL;
     return -1;
 }
-
+// 发送命令
 void zmq::ctx_t::send_command (uint32_t tid_, const command_t &command_)
 {
     _slots[tid_]->send (command_);

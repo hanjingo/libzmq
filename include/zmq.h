@@ -262,7 +262,7 @@ typedef struct zmq_msg_t
 #else
     unsigned char _[64];
 #endif
-} zmq_msg_t;
+} zmq_msg_t; // zmq消息
 
 typedef void(zmq_free_fn) (void *data_, void *hint_);
 

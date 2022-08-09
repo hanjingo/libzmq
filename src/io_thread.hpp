@@ -53,37 +53,37 @@ class io_thread_t ZMQ_FINAL : public object_t, public i_poll_events
     ~io_thread_t ();
 
     //  Launch the physical thread.
-    void start ();
+    void start ();             // 启动线程
 
     //  Ask underlying thread to stop.
-    void stop ();
+    void stop ();              // 停止线程
 
     //  Returns mailbox associated with this I/O thread.
-    mailbox_t *get_mailbox ();
+    mailbox_t *get_mailbox (); // 返回线程的邮箱
 
     //  i_poll_events implementation.
-    void in_event ();
-    void out_event ();
-    void timer_event (int id_);
+    void in_event ();              // 处理poller事件
+    void out_event ();             // 此函数无意义
+    void timer_event (int id_);    // 处理计时器事件
 
     //  Used by io_objects to retrieve the associated poller object.
-    poller_t *get_poller () const;
+    poller_t *get_poller () const; // 返回轮询器
 
     //  Command handlers.
-    void process_stop ();
+    void process_stop ();          // 处理stop命令
 
     //  Returns load experienced by the I/O thread.
-    int get_load () const;
+    int get_load () const;         // 返回io线程的负载
 
   private:
     //  I/O thread accesses incoming commands via this mailbox.
-    mailbox_t _mailbox;
+    mailbox_t _mailbox;                 // 邮箱（用于线程通信）
 
     //  Handle associated with mailbox' file descriptor.
-    poller_t::handle_t _mailbox_handle;
+    poller_t::handle_t _mailbox_handle; // 邮箱信号回调函数
 
     //  I/O multiplexing is performed using a poller object.
-    poller_t *_poller;
+    poller_t *_poller;                  // 轮询器
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (io_thread_t)
 };

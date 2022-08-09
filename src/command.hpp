@@ -52,9 +52,9 @@ __declspec(align (64))
   struct command_t
 {
     //  Object to process the command.
-    zmq::object_t *destination;
+    zmq::object_t *destination; // 目的地
 
-    enum type_t
+    enum type_t // 命令类型
     {
         stop,
         plug,
@@ -80,7 +80,7 @@ __declspec(align (64))
         done
     } type;
 
-    union args_t
+    union args_t // 参数
     {
         //  Sent to I/O thread to let it know that it should
         //  terminate itself.

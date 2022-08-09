@@ -47,7 +47,7 @@ zmq::mailbox_t::~mailbox_t ()
 
     // Work around problem that other threads might still be in our
     // send() method, by waiting on the mutex before disappearing.
-    _sync.lock ();
+    _sync.lock ();   // 加锁（保证：如果有其它线程在使用，等它们执行完）
     _sync.unlock ();
 }
 
@@ -55,44 +55,44 @@ zmq::fd_t zmq::mailbox_t::get_fd () const
 {
     return _signaler.get_fd ();
 }
-
+// 发送命令
 void zmq::mailbox_t::send (const command_t &cmd_)
 {
     _sync.lock ();
-    _cpipe.write (cmd_, false);
-    const bool ok = _cpipe.flush ();
+    _cpipe.write (cmd_, false);      // 写入命令
+    const bool ok = _cpipe.flush (); // 批量刷入
     _sync.unlock ();
     if (!ok)
-        _signaler.send ();
+        _signaler.send ();           // 发送读信号
 }
-
+// 接收命令
 int zmq::mailbox_t::recv (command_t *cmd_, int timeout_)
 {
     //  Try to get the command straight away.
-    if (_active) {
+    if (_active) { // 开始时，处于未激活状态
         if (_cpipe.read (cmd_))
             return 0;
 
         //  If there are no more commands available, switch into passive state.
-        _active = false;
+        _active = false; // 无命令可读时，标记为未激活状态
     }
 
     //  Wait for signal from the command sender.
-    int rc = _signaler.wait (timeout_);
+    int rc = _signaler.wait (timeout_); // 等待信号（阻塞）
     if (rc == -1) {
         errno_assert (errno == EAGAIN || errno == EINTR);
         return -1;
     }
 
     //  Receive the signal.
-    rc = _signaler.recv_failable ();
+    rc = _signaler.recv_failable (); // 收到信号，设置mailbox为活跃
     if (rc == -1) {
         errno_assert (errno == EAGAIN);
         return -1;
     }
 
     //  Switch into active state.
-    _active = true;
+    _active = true; // 激活信箱
 
     //  Get a command.
     const bool ok = _cpipe.read (cmd_);

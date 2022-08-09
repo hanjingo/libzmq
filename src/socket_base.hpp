@@ -54,7 +54,7 @@ namespace zmq
 class ctx_t;
 class msg_t;
 class pipe_t;
-
+// socket线程
 class socket_base_t : public own_t,
                       public array_item_t<>,
                       public i_poll_events,
@@ -107,7 +107,7 @@ class socket_base_t : public own_t,
 
     //  i_poll_events implementation. This interface is used when socket
     //  is handled by the poller in the reaper thread.
-    void in_event () ZMQ_FINAL;
+    void in_event () ZMQ_FINAL; // 处理事件（只在销毁socket时用到）
     void out_event () ZMQ_FINAL;
     void timer_event (int id_) ZMQ_FINAL;
 
@@ -288,7 +288,7 @@ class socket_base_t : public own_t,
     //  returns only after at least one command was processed.
     //  If throttle argument is true, commands are processed at most once
     //  in a predefined time period.
-    int process_commands (int timeout_, bool throttle_);
+    int process_commands (int timeout_, bool throttle_); // 接收命令
 
     //  Handlers for incoming commands.
     void process_stop () ZMQ_FINAL;

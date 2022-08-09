@@ -50,11 +50,11 @@ template <typename T, int N> class ypipe_t ZMQ_FINAL : public ypipe_base_t<T>
     ypipe_t ()
     {
         //  Insert terminator element into the queue.
-        _queue.push ();
+        _queue.push (); // 申请新块
 
         //  Let all the pointers to point to the terminator.
         //  (unless pipe is dead, in which case c is set to NULL).
-        _r = _w = _f = &_queue.back ();
+        _r = _w = _f = &_queue.back (); // r, w, f 三个指针都指向新取的块
         _c.set (&_queue.back ());
     }
 
@@ -71,11 +71,11 @@ template <typename T, int N> class ypipe_t ZMQ_FINAL : public ypipe_base_t<T>
     //  set to true the item is assumed to be continued by items
     //  subsequently written to the pipe. Incomplete items are never
     //  flushed down the stream.
-    void write (const T &value_, bool incomplete_)
+    void write (const T &value_, bool incomplete_) // 写数据
     {
         //  Place the value to the queue, add new terminator element.
-        _queue.back () = value_;
-        _queue.push ();
+        _queue.back () = value_; // 赋值
+        _queue.push ();          // 申请新块
 
         //  Move the "flush up to here" poiter.
         if (!incomplete_)
@@ -100,14 +100,14 @@ template <typename T, int N> class ypipe_t ZMQ_FINAL : public ypipe_base_t<T>
     //  Flush all the completed items into the pipe. Returns false if
     //  the reader thread is sleeping. In that case, caller is obliged to
     //  wake the reader up before using the pipe again.
-    bool flush ()
+    bool flush () // 刷入数据
     {
         //  If there are no un-flushed items, do nothing.
         if (_w == _f)
             return true;
 
         //  Try to set 'c' to 'f'.
-        if (_c.cas (_w, _f) != _w) {
+        if (_c.cas (_w, _f) != _w) { // 设置失败
             //  Compare-and-swap was unseccessful because 'c' is NULL.
             //  This means that the reader is asleep. Therefore we don't
             //  care about thread-safeness and update c in non-atomic
@@ -125,23 +125,23 @@ template <typename T, int N> class ypipe_t ZMQ_FINAL : public ypipe_base_t<T>
     }
 
     //  Check whether item is available for reading.
-    bool check_read ()
+    bool check_read () // 检查是否可读
     {
         //  Was the value prefetched already? If so, return.
-        if (&_queue.front () != _r && _r)
+        if (&_queue.front () != _r && _r) // 判断是否在前几次调用read函数时已经预取数据
             return true;
 
         //  There's no prefetched value, so let us prefetch more values.
         //  Prefetching is to simply retrieve the
         //  pointer from c in atomic fashion. If there are no
         //  items to prefetch, set c to NULL (using compare-and-swap).
-        _r = _c.cas (&_queue.front (), NULL);
+        _r = _c.cas (&_queue.front (), NULL); // 尝试预取数据
 
         //  If there are no elements prefetched, exit.
         //  During pipe's lifetime r should never be NULL, however,
         //  it can happen during pipe shutdown when items
         //  are being deallocated.
-        if (&_queue.front () == _r || !_r)
+        if (&_queue.front () == _r || !_r) // 判断是否成功预取数据
             return false;
 
         //  There was at least one value prefetched.
@@ -150,7 +150,7 @@ template <typename T, int N> class ypipe_t ZMQ_FINAL : public ypipe_base_t<T>
 
     //  Reads an item from the pipe. Returns false if there is no value.
     //  available.
-    bool read (T *value_)
+    bool read (T *value_) // 读数据
     {
         //  Try to prefetch a value.
         if (!check_read ())
@@ -183,20 +183,20 @@ template <typename T, int N> class ypipe_t ZMQ_FINAL : public ypipe_base_t<T>
 
     //  Points to the first un-flushed item. This variable is used
     //  exclusively by writer thread.
-    T *_w;
+    T *_w; // 指向第一个未刷新的元素（只被写线程使用）
 
     //  Points to the first un-prefetched item. This variable is used
     //  exclusively by reader thread.
-    T *_r;
+    T *_r; // 指向第一个还没预提取的元素（只被读线程使用）
 
     //  Points to the first item to be flushed in the future.
-    T *_f;
+    T *_f; // 指向下一轮要被刷新的一批元素中的第一个
 
     //  The single point of contention between writer and reader thread.
     //  Points past the last flushed item. If it is NULL,
     //  reader is asleep. This pointer should be always accessed using
     //  atomic operations.
-    atomic_ptr_t<T> _c;
+    atomic_ptr_t<T> _c; // 指向每一轮刷新的起点（读写线程共享）
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (ypipe_t)
 };

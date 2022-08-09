@@ -44,7 +44,7 @@ namespace zmq
 //  given moment. Attempt to send a signal before receiving the previous
 //  one will result in undefined behaviour.
 
-class signaler_t
+class signaler_t // 信号机
 {
   public:
     signaler_t ();
@@ -52,13 +52,13 @@ class signaler_t
 
     // Returns the socket/file descriptor
     // May return retired_fd if the signaler could not be initialized.
-    fd_t get_fd () const;
-    void send ();
-    int wait (int timeout_) const;
-    void recv ();
-    int recv_failable ();
+    fd_t get_fd () const;          // 获得read标识符
+    void send ();                  // 发送信号
+    int wait (int timeout_) const; // 等待信号（阻塞）
+    void recv ();                  // 接收信号（出错退出）
+    int recv_failable ();          // 接收信号（出错不退出）
 
-    bool valid () const;
+    bool valid () const;           // 信号机是否可用
 
 #ifdef HAVE_FORK
     // close the file descriptors in a forked child process so that they

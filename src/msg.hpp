@@ -56,7 +56,7 @@ namespace zmq
 
 static const char cancel_cmd_name[] = "\6CANCEL";
 static const char sub_cmd_name[] = "\x9SUBSCRIBE";
-
+// zmq消息
 class msg_t
 {
   public:

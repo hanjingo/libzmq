@@ -41,23 +41,23 @@
 
 namespace zmq
 {
-class mutex_t
+class mutex_t // 同步锁
 {
   public:
     mutex_t () { InitializeCriticalSection (&_cs); }
 
     ~mutex_t () { DeleteCriticalSection (&_cs); }
 
-    void lock () { EnterCriticalSection (&_cs); }
+    void lock () { EnterCriticalSection (&_cs); }   // 加锁（设置临界区为受限状态）
 
     bool try_lock () { return (TryEnterCriticalSection (&_cs)) ? true : false; }
 
-    void unlock () { LeaveCriticalSection (&_cs); }
+    void unlock () { LeaveCriticalSection (&_cs); } // 解锁
 
-    CRITICAL_SECTION *get_cs () { return &_cs; }
+    CRITICAL_SECTION *get_cs () { return &_cs; }    // 返回临界区
 
   private:
-    CRITICAL_SECTION _cs;
+    CRITICAL_SECTION _cs; // 临界区
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (mutex_t)
 };
